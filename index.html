@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solbari — Weekly Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <div id="loading-overlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Connecting...</div>
+  </div>
+
+  <div id="error-msg" class="error-msg hidden"></div>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-brand"><span id="brand-title">Dashboard</span></div>
+      <select id="week-select" class="week-select"><option>Loading...</option></select>
+    </div>
+    <div class="topbar-right">
+      <button id="btn-refresh" class="btn-icon">↻ Refresh</button>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <div class="section-label" id="week-label">Ad Performance</div>
+    <div class="kpi-grid">
+      <div class="kpi-card" id="kpi-sales"><div class="kpi-label">Ad Sales</div><div class="kpi-value">—</div><div class="kpi-delta"></div><div class="kpi-sub"></div></div>
+      <div class="kpi-card" id="kpi-spend"><div class="kpi-label">Ad Spend</div><div class="kpi-value">—</div><div class="kpi-delta"></div><div class="kpi-sub"></div></div>
+      <div class="kpi-card" id="kpi-roas"><div class="kpi-label">ROAS</div><div class="kpi-value">—</div><div class="kpi-delta"></div><div class="kpi-sub"></div></div>
+      <div class="kpi-card" id="kpi-acos"><div class="kpi-label">ACOS</div><div class="kpi-value">—</div><div class="kpi-delta"></div><div class="kpi-sub"></div></div>
+      <div class="kpi-card" id="kpi-orders"><div class="kpi-label">Orders</div><div class="kpi-value">—</div><div class="kpi-delta"></div><div class="kpi-sub"></div></div>
+      <div class="kpi-card" id="kpi-clicks"><div class="kpi-label">Clicks</div><div class="kpi-value">—</div><div class="kpi-delta"></div><div class="kpi-sub"></div></div>
+      <div class="kpi-card" id="kpi-imp"><div class="kpi-label">Impressions</div><div class="kpi-value">—</div><div class="kpi-delta"></div><div class="kpi-sub"></div></div>
+      <div class="kpi-card" id="kpi-cvr"><div class="kpi-label">CVR</div><div class="kpi-value">—</div><div class="kpi-delta"></div><div class="kpi-sub"></div></div>
+    </div>
+
+    <div class="section-label">Business Report</div>
+    <div class="biz-grid">
+      <div class="biz-card"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="biz-revenue">—</div></div>
+      <div class="biz-card"><div class="kpi-label">Total Orders</div><div class="kpi-value" id="biz-orders">—</div></div>
+      <div class="biz-card"><div class="kpi-label">Sessions</div><div class="kpi-value" id="biz-sessions">—</div></div>
+      <div class="biz-card"><div class="kpi-label">Buy Box %</div><div class="kpi-value" id="biz-buybox">—</div></div>
+    </div>
+
+    <div class="card card-full mb-1"><div class="card-title">Weekly Trend</div><div class="chart-container"><canvas id="trend-chart"></canvas></div></div>
+
+    <div class="chart-row">
+      <div class="card"><div class="card-title">Revenue Split</div><div class="chart-container-sm"><canvas id="rev-split-chart"></canvas></div></div>
+      <div class="card"><div class="card-title">Brand vs Generic</div><div class="chart-container-sm"><canvas id="brand-gen-chart"></canvas></div></div>
+    </div>
+
+    <div class="brand-gen-detail">
+      <div class="bg-box">
+        <div class="bg-box-label brand">Brand</div>
+        <div class="bg-stats">
+          <div><div class="bg-stat-label">ROAS</div><div class="bg-stat-value text-cyan" id="brand-roas">—</div></div>
+          <div><div class="bg-stat-label">Spend</div><div class="bg-stat-value" id="brand-spend">—</div></div>
+          <div><div class="bg-stat-label">Sales</div><div class="bg-stat-value" id="brand-sales2">—</div></div>
+          <div><div class="bg-stat-label">ACOS</div><div class="bg-stat-value" id="brand-acos">—</div></div>
+        </div>
+      </div>
+      <div class="bg-box">
+        <div class="bg-box-label generic">Generic</div>
+        <div class="bg-stats">
+          <div><div class="bg-stat-label">ROAS</div><div class="bg-stat-value text-cyan" id="generic-roas">—</div></div>
+          <div><div class="bg-stat-label">Spend</div><div class="bg-stat-value" id="generic-spend">—</div></div>
+          <div><div class="bg-stat-label">Sales</div><div class="bg-stat-value" id="generic-sales2">—</div></div>
+          <div><div class="bg-stat-label">ACOS</div><div class="bg-stat-value" id="generic-acos">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-full mb-1"><div class="card-title">Executive Summary</div><div class="exec-summary" id="exec-summary"><p class="text-muted">Loading...</p></div></div>
+
+    <div class="card card-full mb-1">
+      <div class="card-title">Search Term Analysis</div>
+      <p class="table-note">ASINs appearing as search terms are from Category and Product targeting campaigns, not customer searches.</p>
+      <div class="table-label top">Top Performers</div>
+      <table class="data-table"><thead><tr><th>Term</th><th>Sales</th><th>Spend</th><th>ROAS</th><th>Ord</th><th>Clicks</th></tr></thead><tbody id="search-top-body"></tbody></table>
+      <div class="table-label low" style="margin-top:1.5rem">Low Performers (30+ Clicks, $0 Sales)</div>
+      <table class="data-table"><thead><tr><th>Term</th><th>Wasted</th><th>Clicks</th></tr></thead><tbody id="search-low-body"></tbody></table>
+      <div class="table-label opp" style="margin-top:1.5rem">Scaling Opportunities</div>
+      <p class="table-note">High-ROAS generic terms — scale up</p>
+      <table class="data-table"><thead><tr><th>Term</th><th>Sales</th><th>Spend</th><th>ROAS</th></tr></thead><tbody id="search-opp-body"></tbody></table>
+    </div>
+
+    <div class="card card-full mb-1">
+      <div class="card-title">Product Performance</div>
+      <div class="table-label top">Top Products by Sales</div>
+      <table class="data-table"><thead><tr><th>Product</th><th>Sales</th><th>Spend</th><th>ROAS</th><th>Ord</th></tr></thead><tbody id="products-body"></tbody></table>
+      <div class="table-label acc" style="margin-top:1.5rem">Accelerators — Sales Up 20%+ WoW</div>
+      <table class="data-table"><thead><tr><th>Product</th><th>Sales</th><th>Prev</th><th>WoW</th><th>ROAS</th><th>Ord</th></tr></thead><tbody id="acc-body"></tbody></table>
+      <div class="table-label dec" style="margin-top:1.5rem">Decelerators — Sales Down 20%+ WoW</div>
+      <table class="data-table"><thead><tr><th>Product</th><th>Sales</th><th>Prev</th><th>WoW</th><th>ROAS</th><th>Ord</th></tr></thead><tbody id="dec-body"></tbody></table>
+    </div>
+
+  </main>
+
+  <footer class="footer">Powered by <a href="https://pattern.com" target="_blank">Pattern</a> · #1 Global Ecommerce Accelerator</footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+
+</body>
+</html>
