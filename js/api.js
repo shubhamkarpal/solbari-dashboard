@@ -39,5 +39,9 @@ const API = (() => {
     return call({ action: "refresh", week: weekName || "" });
   }
 
-  return { getWeeks, getWeekData, getTrend, refresh };
+  async function saveNotes(weekName, summary, recs) {
+    return call({ action: "savenotes", week: weekName, summary: summary, recs: recs });
+  }
+
+  return { getWeeks, getWeekData, getTrend, refresh, saveNotes };
 })();

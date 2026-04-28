@@ -9,11 +9,7 @@
 </head>
 <body>
 
-  <div id="loading-overlay" class="loading-overlay">
-    <div class="spinner"></div>
-    <div class="loading-text">Connecting...</div>
-  </div>
-
+  <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div><div class="loading-text">Connecting...</div></div>
   <div id="error-msg" class="error-msg hidden"></div>
 
   <header class="topbar">
@@ -21,9 +17,7 @@
       <div class="topbar-brand"><span id="brand-title">Dashboard</span></div>
       <select id="week-select" class="week-select"><option>Loading...</option></select>
     </div>
-    <div class="topbar-right">
-      <button id="btn-refresh" class="btn-icon">↻ Refresh</button>
-    </div>
+    <div class="topbar-right"><button id="btn-refresh" class="btn-icon">↻ Refresh</button></div>
   </header>
 
   <main class="main">
@@ -48,7 +42,7 @@
       <div class="biz-card"><div class="kpi-label">Buy Box %</div><div class="kpi-value" id="biz-buybox">—</div></div>
     </div>
 
-    <!-- MTD Budget Pacing -->
+    <!-- MTD -->
     <div id="mtd-section" class="card card-full mb-1" style="display:none">
       <div class="card-title">MTD Budget Pacing</div>
       <div class="mtd-row">
@@ -79,28 +73,39 @@
     </div>
 
     <div class="brand-gen-detail">
-      <div class="bg-box">
-        <div class="bg-box-label brand">Brand</div>
-        <div class="bg-stats">
-          <div><div class="bg-stat-label">ROAS</div><div class="bg-stat-value text-cyan" id="brand-roas">—</div></div>
-          <div><div class="bg-stat-label">Spend</div><div class="bg-stat-value" id="brand-spend">—</div></div>
-          <div><div class="bg-stat-label">Sales</div><div class="bg-stat-value" id="brand-sales2">—</div></div>
-          <div><div class="bg-stat-label">ACOS</div><div class="bg-stat-value" id="brand-acos">—</div></div>
-        </div>
-      </div>
-      <div class="bg-box">
-        <div class="bg-box-label generic">Generic</div>
-        <div class="bg-stats">
-          <div><div class="bg-stat-label">ROAS</div><div class="bg-stat-value text-cyan" id="generic-roas">—</div></div>
-          <div><div class="bg-stat-label">Spend</div><div class="bg-stat-value" id="generic-spend">—</div></div>
-          <div><div class="bg-stat-label">Sales</div><div class="bg-stat-value" id="generic-sales2">—</div></div>
-          <div><div class="bg-stat-label">ACOS</div><div class="bg-stat-value" id="generic-acos">—</div></div>
-        </div>
-      </div>
+      <div class="bg-box"><div class="bg-box-label brand">Brand</div><div class="bg-stats"><div><div class="bg-stat-label">ROAS</div><div class="bg-stat-value text-cyan" id="brand-roas">—</div></div><div><div class="bg-stat-label">Spend</div><div class="bg-stat-value" id="brand-spend">—</div></div><div><div class="bg-stat-label">Sales</div><div class="bg-stat-value" id="brand-sales2">—</div></div><div><div class="bg-stat-label">ACOS</div><div class="bg-stat-value" id="brand-acos">—</div></div></div></div>
+      <div class="bg-box"><div class="bg-box-label generic">Generic</div><div class="bg-stats"><div><div class="bg-stat-label">ROAS</div><div class="bg-stat-value text-cyan" id="generic-roas">—</div></div><div><div class="bg-stat-label">Spend</div><div class="bg-stat-value" id="generic-spend">—</div></div><div><div class="bg-stat-label">Sales</div><div class="bg-stat-value" id="generic-sales2">—</div></div><div><div class="bg-stat-label">ACOS</div><div class="bg-stat-value" id="generic-acos">—</div></div></div></div>
     </div>
 
-    <div class="card card-full mb-1"><div class="card-title">Executive Summary</div><div class="exec-summary" id="exec-summary"><p class="text-muted">Loading...</p></div></div>
+    <!-- Executive Summary (Editable) -->
+    <div class="card card-full mb-1">
+      <div class="card-header">
+        <div class="card-title">Executive Summary</div>
+        <div class="card-actions">
+          <button class="btn-sm" id="summary-btn-edit" onclick="Dashboard.toggleEdit('summary',true)">✎ Edit</button>
+          <button class="btn-sm btn-save" id="summary-btn-save" style="display:none" onclick="Dashboard.saveAllNotes()">Save</button>
+          <button class="btn-sm" id="summary-btn-cancel" style="display:none" onclick="Dashboard.toggleEdit('summary',false)">Cancel</button>
+        </div>
+      </div>
+      <div class="exec-summary" id="summary-display"><p class="text-muted">Loading...</p></div>
+      <textarea class="edit-textarea" id="summary-edit" style="display:none" rows="6" placeholder="Write your executive summary here..."></textarea>
+    </div>
 
+    <!-- Recommendations (Editable) -->
+    <div class="card card-full mb-1">
+      <div class="card-header">
+        <div class="card-title">Recommendations</div>
+        <div class="card-actions">
+          <button class="btn-sm" id="recs-btn-edit" onclick="Dashboard.toggleEdit('recs',true)">✎ Edit</button>
+          <button class="btn-sm btn-save" id="recs-btn-save" style="display:none" onclick="Dashboard.saveAllNotes()">Save</button>
+          <button class="btn-sm" id="recs-btn-cancel" style="display:none" onclick="Dashboard.toggleEdit('recs',false)">Cancel</button>
+        </div>
+      </div>
+      <div class="rec-list" id="recs-display"><p class="text-muted">Click Edit to add recommendations.</p></div>
+      <textarea class="edit-textarea" id="recs-edit" style="display:none" rows="6" placeholder="One per line. Start with HIGH, MED, or LOW for priority badges.&#10;Example:&#10;HIGH — Negate 4 search terms with 30+ clicks and $0 sales&#10;MED — Scale 'sun protection shoulder wraps' at 519x ROAS&#10;LOW — Evaluate competitor targeting opportunities"></textarea>
+    </div>
+
+    <!-- Search Terms -->
     <div class="card card-full mb-1">
       <div class="card-title">Search Term Analysis</div>
       <p class="table-note">ASINs appearing as search terms are from Category and Product targeting campaigns, not customer searches.</p>
@@ -113,6 +118,7 @@
       <table class="data-table"><thead><tr><th>Term</th><th>Sales</th><th>Spend</th><th>ROAS</th></tr></thead><tbody id="search-opp-body"></tbody></table>
     </div>
 
+    <!-- Products -->
     <div class="card card-full mb-1">
       <div class="card-title">Product Performance</div>
       <div class="table-label top">Top Products by Sales</div>
@@ -130,6 +136,5 @@
   <script src="js/config.js"></script>
   <script src="js/api.js"></script>
   <script src="js/dashboard.js"></script>
-
 </body>
 </html>
