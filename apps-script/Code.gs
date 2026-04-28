@@ -2,18 +2,15 @@
  * Pattern Weekly Dashboard — API Backend
  * ───────────────────────────────────────
  * Deploy this as a Google Apps Script Web App.
- * It reads your Drive folder and returns JSON.
+ *
+ * REQUIRED: Enable Advanced Drive Service
+ *   → In editor, click + next to "Services" → Add "Drive API"
  *
  * SETUP:
- * 1. Go to script.google.com → New Project
- * 2. Paste this entire file
- * 3. Update BRAND_FOLDER_ID below with your folder ID
- * 4. Click Deploy → New Deployment → Web App
- *    - Execute as: Me
- *    - Who has access: Anyone
- * 5. Copy the deployment URL → paste into js/config.js
- *
- * That's it. Free forever. No billing. No API keys.
+ * 1. Update BRAND_FOLDER_ID (line 20)
+ * 2. Update MTD_SHEET_ID and MTD_SHEET_TAB if using MTD tracking (lines 23-24)
+ * 3. Deploy → New Deployment → Web App (Execute as: Me, Access: Anyone)
+ * 4. Copy URL → paste into js/config.js
  */
 
 const BRAND_NAME = "Solbari";
@@ -21,8 +18,12 @@ const BRAND_FOLDER_ID = "1zFv9PXv_qxBcPJCwMGcjpP6zZ6cfXb2A";
 const BRAND_KEYWORDS = ["solbari"];
 const CACHE_TTL = 3600;
 
+// MTD Tracker — set these if you have a monthly tracker sheet
+const MTD_SHEET_ID = "YOUR_MTD_TRACKER_SHEET_ID_HERE";
+const MTD_SHEET_TAB = "Apr 2026";
+
 // ═══════════════════════════════════════════════════════
-// JSON API Endpoint — this is what the HTML dashboard calls
+// JSON API Endpoint
 // ═══════════════════════════════════════════════════════
 
 function doGet(e) {
@@ -46,11 +47,14 @@ function doGet(e) {
         var wk = e.parameter.week || "";
         result = wk ? loadWeekPair(wk) : { weeks: getWeekList(), brand: BRAND_NAME };
         break;
+      case "debug":
+        result = debugWeek(e.parameter.week || "");
+        break;
       default:
-        result = { error: "Use ?action=weeks or ?action=week&week=Week 16 or ?action=trend" };
+        result = { error: "Use ?action=weeks or ?action=week&week=Week 16 or ?action=trend or ?action=debug&week=Week 16" };
     }
   } catch (err) {
-    result = { error: err.toString() };
+    result = { error: err.toString(), stack: err.stack };
   }
 
   return ContentService
@@ -58,9 +62,97 @@ function doGet(e) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+// ═══════════════════════════════════════════════════════
+// Debug — shows what files exist and what parsed
+// ═══════════════════════════════════════════════════════
+
+function debugWeek(weekName) {
+  var info = { brand: BRAND_NAME, folderId: BRAND_FOLDER_ID, weekName: weekName, files: [], errors: [] };
+  try {
+    var bf = getBrandFolder();
+    info.brandFolder = bf.getName();
+    var weeks = getWeekList();
+    info.allWeeks = weeks;
+    if (!weekName) weekName = weeks[weeks.length - 1];
+    info.weekName = weekName;
+
+    var wfs = bf.getFoldersByName(weekName);
+    if (!wfs.hasNext()) { info.errors.push("Week folder not found: " + weekName); return info; }
+    var wf = wfs.next();
+    var files = wf.getFiles();
+    while (files.hasNext()) {
+      var f = files.next();
+      var fInfo = { name: f.getName(), size: f.getSize(), type: f.getMimeType() };
+      var nm = f.getName().toLowerCase();
+      try {
+        if (nm.indexOf(".csv") >= 0) {
+          var txt = f.getBlob().getDataAsString();
+          var hdr = txt.split("\n")[0];
+          fInfo.firstRow = hdr.substring(0, 200);
+          fInfo.rowCount = txt.split("\n").length;
+          var hdrL = hdr.toLowerCase();
+          if (hdrL.indexOf("date") >= 0 && hdrL.indexOf("campaign") >= 0) {
+            fInfo.detected = "Campaign CSV";
+            var rows = parseCampaignCSV(txt);
+            fInfo.parsedRows = rows.length;
+          } else if (hdrL.indexOf("asin") >= 0 && (hdrL.indexOf("session") >= 0 || hdrL.indexOf("ordered product") >= 0)) {
+            fInfo.detected = "Business CSV";
+            var biz = parseBusinessCSV(txt);
+            fInfo.parsedSessions = biz.sessions;
+            fInfo.parsedTitles = Object.keys(biz.titles).length;
+          } else {
+            fInfo.detected = "Unknown CSV";
+          }
+          fInfo.status = "OK";
+        } else if (nm.indexOf(".xlsx") >= 0) {
+          fInfo.detected = "XLSX";
+          try {
+            var p = parseXLSX(f.getBlob());
+            fInfo.headers = p.headers.slice(0, 5);
+            fInfo.dataRows = p.rows.length;
+            var hs = p.headers.map(function(h) { return h.toLowerCase(); });
+            if (hs.some(function(h) { return h.indexOf("customer search term") >= 0; })) {
+              fInfo.detected = "Search Term XLSX";
+              var st = processSearchTerms(p);
+              fInfo.topTerms = st.top.length;
+              fInfo.lowTerms = st.low.length;
+              fInfo.oppTerms = st.opp.length;
+            } else if (hs.some(function(h) { return h.indexOf("advertised asin") >= 0 || h.indexOf("advertised sku") >= 0; })) {
+              fInfo.detected = "Product XLSX";
+              var pr = processProducts(p, null);
+              fInfo.productsFound = pr.length;
+            }
+            fInfo.status = "OK";
+          } catch (xlsxErr) {
+            fInfo.status = "XLSX_PARSE_ERROR";
+            fInfo.error = xlsxErr.toString();
+            info.errors.push("XLSX parse failed for " + f.getName() + ": " + xlsxErr.toString());
+          }
+        }
+      } catch (fileErr) {
+        fInfo.status = "ERROR";
+        fInfo.error = fileErr.toString();
+        info.errors.push(f.getName() + ": " + fileErr.toString());
+      }
+      info.files.push(fInfo);
+    }
+
+    // Check Drive Advanced Service
+    try {
+      info.driveServiceEnabled = typeof Drive !== "undefined" && typeof Drive.Files !== "undefined";
+    } catch(e) {
+      info.driveServiceEnabled = false;
+      info.errors.push("Drive Advanced Service NOT enabled. Go to Services → Add Drive API");
+    }
+
+  } catch (e) {
+    info.errors.push("Top-level: " + e.toString());
+  }
+  return info;
+}
 
 // ═══════════════════════════════════════════════════════
-// Everything below is your existing parsing logic (unchanged)
+// Core Logic
 // ═══════════════════════════════════════════════════════
 
 function gc(k) { try { var v = CacheService.getScriptCache().get(k); return v ? JSON.parse(v) : null; } catch(e) { return null; } }
@@ -88,11 +180,25 @@ function getWeekList() {
   return w.sort(function(a, b) { var na = parseInt(a.replace(/\D/g, "")), nb = parseInt(b.replace(/\D/g, "")); return (!isNaN(na) && !isNaN(nb)) ? na - nb : a.localeCompare(b); });
 }
 
+function getMTDData() {
+  try {
+    if (!MTD_SHEET_ID || MTD_SHEET_ID === "YOUR_MTD_TRACKER_SHEET_ID_HERE") return null;
+    var ss = SpreadsheetApp.openById(MTD_SHEET_ID), sh = ss.getSheetByName(MTD_SHEET_TAB);
+    if (!sh) return null; var d = sh.getDataRange().getValues();
+    for (var i = 2; i < d.length; i++) {
+      if (String(d[i][0] || "").trim().toLowerCase().indexOf(BRAND_NAME.toLowerCase()) >= 0) {
+        var sf = Number(d[i][3])||0, ms = Number(d[i][6])||0, saf = Number(d[i][11])||0, mas = Number(d[i][14])||0, day = Number(d[0][21])||1, md = Number(d[0][23])||30;
+        return { spendForecast:sf, mtdSpend:ms, salesForecast:saf, mtdSales:mas, spendPct:sf>0?rnd(ms/sf*100,1):0, salesPct:saf>0?rnd(mas/saf*100,1):0, roasTarget:sf>0?rnd(saf/sf):0, day:day, monthDays:md, roasMtd:ms>0?rnd(mas/ms):0 };
+      }
+    } return null;
+  } catch(e) { return null; }
+}
+
 function loadWeekPair(weekName) {
   var weeks = getWeekList(), idx = weeks.indexOf(weekName);
   var cur = gc("wk_"+weekName); if (!cur) { cur = getWeekData(weekName); sc("wk_"+weekName, cur); }
   var prev = null; if (idx > 0) { var pw = weeks[idx-1]; prev = gc("wk_"+pw); if (!prev) { prev = getWeekData(pw); sc("wk_"+pw, prev); } }
-  return { brand: BRAND_NAME, weekOrder: weeks, cur: cur, prev: prev };
+  cur.mtd = getMTDData(); return { brand: BRAND_NAME, weekOrder: weeks, cur: cur, prev: prev };
 }
 
 function getAllWeeksSummary() {
@@ -119,7 +225,7 @@ function getWeekData(weekName) {
   for (var i = 0; i < xlsxFiles.length; i++) { try { var p = parseXLSX(xlsxFiles[i].getBlob()); var hs = p.headers.map(function(h){return h.toLowerCase()});
     if (hs.some(function(h){return h.indexOf("customer search term")>=0})) search = processSearchTerms(p);
     else if (hs.some(function(h){return h.indexOf("advertised asin")>=0||h.indexOf("advertised sku")>=0})) prod = processProducts(p, biz);
-  } catch(e) { Logger.log(xlsxFiles[i].getName()+": "+e); } }
+  } catch(e) { Logger.log("XLSX error: "+xlsxFiles[i].getName()+": "+e); } }
   if (prod && biz && biz.titles) { prod.forEach(function(p){ if(biz.titles[p.asin]){p.title=shortenTitle(biz.titles[p.asin])} else p.title=shortenTitle(p.title||p.sku||p.asin) }); }
   var r = { label:weekName, range:weekName, brand:BRAND_NAME };
   if (camp && camp.length) { var sp=0,sa=0,cl=0,im=0,od=0,no=0,ns=0,bs=0,ba=0,gs=0,ga=0;

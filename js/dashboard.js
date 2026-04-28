@@ -128,6 +128,9 @@ const Dashboard = (() => {
     renderSearchTerms(d.searchTermsTop, d.searchTermsLow, d.searchTermsOpp);
     renderProducts(d.products, p ? p.products : null);
     renderSummary(d, p);
+
+    // MTD
+    renderMTD(d.mtd);
   }
 
   function setKPI(id, value, delta, sub) {
@@ -230,6 +233,35 @@ const Dashboard = (() => {
     }
     if (d.ntbOrders > 0) lines.push(`${fmtN(d.orders)} orders, ${d.ntbOrders} new-to-brand (${fmt(d.ntbSales)} incremental).`);
     el.innerHTML = lines.length ? lines.map((l) => `<p>${l}</p>`).join("") : '<p class="text-muted">No data available.</p>';
+  }
+
+  function renderMTD(mtd) {
+    const sec = document.getElementById("mtd-section");
+    if (!mtd) { sec.style.display = "none"; return; }
+    sec.style.display = "";
+
+    document.getElementById("mtd-day").textContent = mtd.day;
+    document.getElementById("mtd-days").textContent = mtd.monthDays;
+    document.getElementById("mtd-spend-val").textContent = fmt(mtd.mtdSpend);
+    document.getElementById("mtd-spend-target").textContent = fmt(mtd.spendForecast);
+    document.getElementById("mtd-spend-bar").style.width = Math.min(mtd.spendPct, 100) + "%";
+
+    const spendDiff = mtd.spendPct - (mtd.day / mtd.monthDays * 100);
+    const spNote = document.getElementById("mtd-spend-note");
+    spNote.textContent = (spendDiff >= 0 ? "▲ " : "▼ ") + Math.abs(spendDiff).toFixed(1) + "% " + (spendDiff >= 0 ? "ahead" : "behind");
+    spNote.className = "mtd-bar-note " + (spendDiff >= 0 ? "text-green" : "text-red");
+
+    document.getElementById("mtd-rev-val").textContent = fmt(mtd.mtdSales);
+    document.getElementById("mtd-rev-target").textContent = fmt(mtd.salesForecast);
+    document.getElementById("mtd-rev-bar").style.width = Math.min(mtd.salesPct, 100) + "%";
+
+    const revDiff = mtd.salesPct - (mtd.day / mtd.monthDays * 100);
+    const rvNote = document.getElementById("mtd-rev-note");
+    rvNote.textContent = (revDiff >= 0 ? "▲ " : "▼ ") + Math.abs(revDiff).toFixed(1) + "% " + (revDiff >= 0 ? "ahead" : "behind");
+    rvNote.className = "mtd-bar-note " + (revDiff >= 0 ? "text-green" : "text-red");
+
+    document.getElementById("mtd-roas").textContent = mtd.roasMtd;
+    document.getElementById("mtd-roas-target").textContent = mtd.roasTarget;
   }
 
   // ── UI ─────────────────────────────────────────────

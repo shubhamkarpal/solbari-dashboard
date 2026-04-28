@@ -48,6 +48,29 @@
       <div class="biz-card"><div class="kpi-label">Buy Box %</div><div class="kpi-value" id="biz-buybox">—</div></div>
     </div>
 
+    <!-- MTD Budget Pacing -->
+    <div id="mtd-section" class="card card-full mb-1" style="display:none">
+      <div class="card-title">MTD Budget Pacing</div>
+      <div class="mtd-row">
+        <div class="mtd-bar-group">
+          <div class="mtd-bar-label">Spend · Day <span id="mtd-day">—</span>/<span id="mtd-days">—</span></div>
+          <div class="mtd-bar-values"><span id="mtd-spend-val">—</span> / <span id="mtd-spend-target">—</span></div>
+          <div class="mtd-bar-track"><div class="mtd-bar-fill mtd-bar-blue" id="mtd-spend-bar" style="width:0%"></div></div>
+          <div class="mtd-bar-note" id="mtd-spend-note"></div>
+        </div>
+        <div class="mtd-bar-group">
+          <div class="mtd-bar-label">Revenue vs Target</div>
+          <div class="mtd-bar-values"><span id="mtd-rev-val">—</span> / <span id="mtd-rev-target">—</span></div>
+          <div class="mtd-bar-track"><div class="mtd-bar-fill mtd-bar-cyan" id="mtd-rev-bar" style="width:0%"></div></div>
+          <div class="mtd-bar-note" id="mtd-rev-note"></div>
+        </div>
+      </div>
+      <div class="mtd-stats">
+        <div><span class="mtd-stat-label">MTD ROAS</span><span class="mtd-stat-value" id="mtd-roas">—</span></div>
+        <div><span class="mtd-stat-label">Target ROAS</span><span class="mtd-stat-value" id="mtd-roas-target">—</span></div>
+      </div>
+    </div>
+
     <div class="card card-full mb-1"><div class="card-title">Weekly Trend</div><div class="chart-container"><canvas id="trend-chart"></canvas></div></div>
 
     <div class="chart-row">

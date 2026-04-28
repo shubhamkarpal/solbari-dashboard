@@ -14,6 +14,6 @@
  */
 
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyQ7r3lBtdeoBkTMitlPpg07_1S5f3i1cx1Lk22oNiEdBGluS2lPTIXdtpup7Co8wnX/exec",
+  APPS_SCRIPT_URL: "YOUR_APPS_SCRIPT_DEPLOYMENT_URL_HERE",
   // Example: "https://script.google.com/macros/s/AKfycbx.../exec"
 };

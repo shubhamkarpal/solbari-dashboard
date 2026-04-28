@@ -70,6 +70,19 @@ body{font-family:var(--font);background:var(--bg-deep);color:var(--text);min-hei
 
 .error-msg{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red);padding:1rem 1.5rem;border-radius:8px;margin:1rem 2rem;font-size:.9rem}
 
+.mtd-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1rem}
+.mtd-bar-group{display:flex;flex-direction:column;gap:.3rem}
+.mtd-bar-label{font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim)}
+.mtd-bar-values{font-size:.9rem;font-weight:600;font-family:var(--mono)}
+.mtd-bar-track{height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;margin-top:.2rem}
+.mtd-bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.mtd-bar-blue{background:var(--blue)}
+.mtd-bar-cyan{background:var(--cyan)}
+.mtd-bar-note{font-size:.72rem;font-weight:600;margin-top:.15rem}
+.mtd-stats{display:flex;gap:2rem;margin-top:.5rem}
+.mtd-stat-label{font-size:.7rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-right:.5rem}
+.mtd-stat-value{font-size:1rem;font-weight:700;font-family:var(--mono);color:var(--cyan)}
+
 .footer{text-align:center;padding:2rem;color:var(--text-dim);font-size:.75rem;border-top:1px solid var(--border);margin-top:2rem}
 .footer a{color:var(--blue);text-decoration:none}
 
