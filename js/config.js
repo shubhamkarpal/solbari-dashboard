@@ -14,6 +14,6 @@
  */
 
 const CONFIG = {
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwVHpTEVj8ffX-yozXhjCcGXgz3DbUe_gtG9tx-gZK3a3Kxf9o7u8ekqjCftxvOTeKV/exec",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxSzoycHPgidFxGxjsyNoqjORhZmVN3r8CbfF6OnZrtPJAmgmJ1GKT3Tsl2LzqA1of-/exec",
   // Example: "https://script.google.com/macros/s/AKfycbx.../exec"
 };
