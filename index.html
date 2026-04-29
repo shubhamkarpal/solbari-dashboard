@@ -3,25 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Solbari — Weekly Dashboard</title>
+  <title>Pattern — Weekly Dashboard</title>
   <link rel="stylesheet" href="css/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
-
   <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div><div class="loading-text">Connecting...</div></div>
   <div id="error-msg" class="error-msg hidden"></div>
-
   <header class="topbar">
-    <div class="topbar-left">
-      <div class="topbar-brand"><span id="brand-title">Dashboard</span></div>
-      <select id="week-select" class="week-select"><option>Loading...</option></select>
-    </div>
+    <div class="topbar-left"><div class="topbar-brand"><span id="brand-title">Dashboard</span></div><select id="week-select" class="week-select"><option>Loading...</option></select></div>
     <div class="topbar-right"><button id="btn-refresh" class="btn-icon">↻ Refresh</button></div>
   </header>
-
   <main class="main">
-
     <div class="section-label" id="week-label">Ad Performance</div>
     <div class="kpi-grid">
       <div class="kpi-card" id="kpi-sales"><div class="kpi-label">Ad Sales</div><div class="kpi-value">—</div><div class="kpi-delta"></div><div class="kpi-sub"></div></div>
@@ -33,7 +26,6 @@
       <div class="kpi-card" id="kpi-imp"><div class="kpi-label">Impressions</div><div class="kpi-value">—</div><div class="kpi-delta"></div><div class="kpi-sub"></div></div>
       <div class="kpi-card" id="kpi-cvr"><div class="kpi-label">CVR</div><div class="kpi-value">—</div><div class="kpi-delta"></div><div class="kpi-sub"></div></div>
     </div>
-
     <div class="section-label">Business Report</div>
     <div class="biz-grid">
       <div class="biz-card"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="biz-revenue">—</div></div>
@@ -41,74 +33,37 @@
       <div class="biz-card"><div class="kpi-label">Sessions</div><div class="kpi-value" id="biz-sessions">—</div></div>
       <div class="biz-card"><div class="kpi-label">Buy Box %</div><div class="kpi-value" id="biz-buybox">—</div></div>
     </div>
-
-    <!-- MTD -->
     <div id="mtd-section" class="card card-full mb-1" style="display:none">
       <div class="card-title">MTD Budget Pacing</div>
       <div class="mtd-row">
-        <div class="mtd-bar-group">
-          <div class="mtd-bar-label">Spend · Day <span id="mtd-day">—</span>/<span id="mtd-days">—</span></div>
-          <div class="mtd-bar-values"><span id="mtd-spend-val">—</span> / <span id="mtd-spend-target">—</span></div>
-          <div class="mtd-bar-track"><div class="mtd-bar-fill mtd-bar-blue" id="mtd-spend-bar" style="width:0%"></div></div>
-          <div class="mtd-bar-note" id="mtd-spend-note"></div>
-        </div>
-        <div class="mtd-bar-group">
-          <div class="mtd-bar-label">Revenue vs Target</div>
-          <div class="mtd-bar-values"><span id="mtd-rev-val">—</span> / <span id="mtd-rev-target">—</span></div>
-          <div class="mtd-bar-track"><div class="mtd-bar-fill mtd-bar-cyan" id="mtd-rev-bar" style="width:0%"></div></div>
-          <div class="mtd-bar-note" id="mtd-rev-note"></div>
-        </div>
+        <div class="mtd-bar-group"><div class="mtd-bar-label">Spend · Day <span id="mtd-day">—</span>/<span id="mtd-days">—</span></div><div class="mtd-bar-values"><span id="mtd-spend-val">—</span> / <span id="mtd-spend-target">—</span></div><div class="mtd-bar-track"><div class="mtd-bar-fill mtd-bar-blue" id="mtd-spend-bar" style="width:0%"></div></div><div class="mtd-bar-note" id="mtd-spend-note"></div></div>
+        <div class="mtd-bar-group"><div class="mtd-bar-label">Revenue vs Target</div><div class="mtd-bar-values"><span id="mtd-rev-val">—</span> / <span id="mtd-rev-target">—</span></div><div class="mtd-bar-track"><div class="mtd-bar-fill mtd-bar-cyan" id="mtd-rev-bar" style="width:0%"></div></div><div class="mtd-bar-note" id="mtd-rev-note"></div></div>
       </div>
-      <div class="mtd-stats">
-        <div><span class="mtd-stat-label">MTD ROAS</span><span class="mtd-stat-value" id="mtd-roas">—</span></div>
-        <div><span class="mtd-stat-label">Target ROAS</span><span class="mtd-stat-value" id="mtd-roas-target">—</span></div>
+      <div class="mtd-stats"><div><span class="mtd-stat-label">MTD ROAS</span><span class="mtd-stat-value" id="mtd-roas">—</span></div><div><span class="mtd-stat-label">Target ROAS</span><span class="mtd-stat-value" id="mtd-roas-target">—</span></div></div>
+    </div>
+    <div id="funnel-section" class="card card-full mb-1" style="display:none">
+      <div class="card-title">Conversion Funnel</div>
+      <div class="funnel">
+        <div class="funnel-step"><div class="funnel-bar-wrap"><div class="funnel-bar funnel-bar-1" id="funnel-bar-imp"></div></div><div class="funnel-info"><div class="funnel-label">Impressions</div><div class="funnel-val" id="funnel-imp-val">—</div></div></div>
+        <div class="funnel-arrow"><span class="funnel-rate" id="funnel-ctr">CTR —</span><span class="funnel-arrow-icon">▼</span></div>
+        <div class="funnel-step"><div class="funnel-bar-wrap"><div class="funnel-bar funnel-bar-2" id="funnel-bar-clicks"></div></div><div class="funnel-info"><div class="funnel-label">Clicks</div><div class="funnel-val" id="funnel-clicks-val">—</div></div></div>
+        <div class="funnel-arrow"><span class="funnel-rate" id="funnel-cvr">CVR —</span><span class="funnel-arrow-icon">▼</span></div>
+        <div class="funnel-step"><div class="funnel-bar-wrap"><div class="funnel-bar funnel-bar-3" id="funnel-bar-orders"></div></div><div class="funnel-info"><div class="funnel-label">Orders</div><div class="funnel-val" id="funnel-orders-val">—</div></div></div>
       </div>
     </div>
-
     <div class="card card-full mb-1"><div class="card-title">Weekly Trend</div><div class="chart-container"><canvas id="trend-chart"></canvas></div></div>
-
     <div class="chart-row">
       <div class="card"><div class="card-title">Revenue Split</div><div class="chart-container-sm"><canvas id="rev-split-chart"></canvas></div></div>
       <div class="card"><div class="card-title">Brand vs Generic</div><div class="chart-container-sm"><canvas id="brand-gen-chart"></canvas></div></div>
     </div>
-
     <div class="brand-gen-detail">
       <div class="bg-box"><div class="bg-box-label brand">Brand</div><div class="bg-stats"><div><div class="bg-stat-label">ROAS</div><div class="bg-stat-value text-cyan" id="brand-roas">—</div></div><div><div class="bg-stat-label">Spend</div><div class="bg-stat-value" id="brand-spend">—</div></div><div><div class="bg-stat-label">Sales</div><div class="bg-stat-value" id="brand-sales2">—</div></div><div><div class="bg-stat-label">ACOS</div><div class="bg-stat-value" id="brand-acos">—</div></div></div></div>
       <div class="bg-box"><div class="bg-box-label generic">Generic</div><div class="bg-stats"><div><div class="bg-stat-label">ROAS</div><div class="bg-stat-value text-cyan" id="generic-roas">—</div></div><div><div class="bg-stat-label">Spend</div><div class="bg-stat-value" id="generic-spend">—</div></div><div><div class="bg-stat-label">Sales</div><div class="bg-stat-value" id="generic-sales2">—</div></div><div><div class="bg-stat-label">ACOS</div><div class="bg-stat-value" id="generic-acos">—</div></div></div></div>
     </div>
-
-    <!-- Executive Summary (Editable) -->
-    <div class="card card-full mb-1">
-      <div class="card-header">
-        <div class="card-title">Executive Summary</div>
-        <div class="card-actions">
-          <button class="btn-sm" id="summary-btn-edit" onclick="Dashboard.toggleEdit('summary',true)">✎ Edit</button>
-          <button class="btn-sm btn-save" id="summary-btn-save" style="display:none" onclick="Dashboard.saveAllNotes()">Save</button>
-          <button class="btn-sm" id="summary-btn-cancel" style="display:none" onclick="Dashboard.toggleEdit('summary',false)">Cancel</button>
-        </div>
-      </div>
-      <div class="exec-summary" id="summary-display"><p class="text-muted">Loading...</p></div>
-      <textarea class="edit-textarea" id="summary-edit" style="display:none" rows="6" placeholder="Write your executive summary here..."></textarea>
-    </div>
-
-    <!-- Recommendations (Editable) -->
-    <div class="card card-full mb-1">
-      <div class="card-header">
-        <div class="card-title">Recommendations</div>
-        <div class="card-actions">
-          <button class="btn-sm" id="recs-btn-edit" onclick="Dashboard.toggleEdit('recs',true)">✎ Edit</button>
-          <button class="btn-sm btn-save" id="recs-btn-save" style="display:none" onclick="Dashboard.saveAllNotes()">Save</button>
-          <button class="btn-sm" id="recs-btn-cancel" style="display:none" onclick="Dashboard.toggleEdit('recs',false)">Cancel</button>
-        </div>
-      </div>
-      <div class="rec-list" id="recs-display"><p class="text-muted">Click Edit to add recommendations.</p></div>
-      <textarea class="edit-textarea" id="recs-edit" style="display:none" rows="6" placeholder="One per line. Start with HIGH, MED, or LOW for priority badges.&#10;Example:&#10;HIGH — Negate 4 search terms with 30+ clicks and $0 sales&#10;MED — Scale 'sun protection shoulder wraps' at 519x ROAS&#10;LOW — Evaluate competitor targeting opportunities"></textarea>
-    </div>
-
-    <!-- Search Terms -->
+    <div class="card card-full mb-1"><div class="card-header"><div class="card-title">Executive Summary</div><div class="card-actions"><button class="btn-sm" id="summary-btn-edit" onclick="Dashboard.toggleEdit('summary',true)">✎ Edit</button><button class="btn-sm btn-save" id="summary-btn-save" style="display:none" onclick="Dashboard.saveAllNotes()">Save</button><button class="btn-sm" id="summary-btn-cancel" style="display:none" onclick="Dashboard.toggleEdit('summary',false)">Cancel</button></div></div><div class="exec-summary" id="summary-display"><p class="text-muted">Loading...</p></div><textarea class="edit-textarea" id="summary-edit" style="display:none" rows="6"></textarea></div>
+    <div class="card card-full mb-1"><div class="card-header"><div class="card-title">Recommendations</div><div class="card-actions"><button class="btn-sm" id="recs-btn-edit" onclick="Dashboard.toggleEdit('recs',true)">✎ Edit</button><button class="btn-sm btn-save" id="recs-btn-save" style="display:none" onclick="Dashboard.saveAllNotes()">Save</button><button class="btn-sm" id="recs-btn-cancel" style="display:none" onclick="Dashboard.toggleEdit('recs',false)">Cancel</button></div></div><div class="rec-list" id="recs-display"><p class="text-muted">Click Edit to add recommendations.</p></div><textarea class="edit-textarea" id="recs-edit" style="display:none" rows="6" placeholder="One per line. Start with HIGH, MED, or LOW:&#10;HIGH — Negate 4 terms with $0 sales&#10;MED — Scale shoulder wraps at 519x ROAS"></textarea></div>
     <div class="card card-full mb-1">
       <div class="card-title">Search Term Analysis</div>
-      <p class="table-note">ASINs appearing as search terms are from Category and Product targeting campaigns, not customer searches.</p>
       <div class="table-label top">Top Performers</div>
       <table class="data-table"><thead><tr><th>Term</th><th>Sales</th><th>Spend</th><th>ROAS</th><th>Ord</th><th>Clicks</th></tr></thead><tbody id="search-top-body"></tbody></table>
       <div class="table-label low" style="margin-top:1.5rem">Low Performers (30+ Clicks, $0 Sales)</div>
@@ -117,8 +72,6 @@
       <p class="table-note">High-ROAS generic terms — scale up</p>
       <table class="data-table"><thead><tr><th>Term</th><th>Sales</th><th>Spend</th><th>ROAS</th></tr></thead><tbody id="search-opp-body"></tbody></table>
     </div>
-
-    <!-- Products -->
     <div class="card card-full mb-1">
       <div class="card-title">Product Performance</div>
       <div class="table-label top">Top Products by Sales</div>
@@ -128,13 +81,8 @@
       <div class="table-label dec" style="margin-top:1.5rem">Decelerators — Sales Down 20%+ WoW</div>
       <table class="data-table"><thead><tr><th>Product</th><th>Sales</th><th>Prev</th><th>WoW</th><th>ROAS</th><th>Ord</th></tr></thead><tbody id="dec-body"></tbody></table>
     </div>
-
   </main>
-
   <footer class="footer">Powered by <a href="https://pattern.com" target="_blank">Pattern</a> · #1 Global Ecommerce Accelerator</footer>
-
-  <script src="js/config.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/dashboard.js"></script>
+  <script src="js/config.js"></script><script src="js/api.js"></script><script src="js/dashboard.js"></script>
 </body>
 </html>
