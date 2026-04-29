@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Pattern — Weekly Dashboard</title>
-  <link rel="stylesheet" href="css/styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Pattern — Weekly Dashboard</title><link rel="stylesheet" href="css/styles.css"><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script></head>
 <body>
   <div id="loading-overlay" class="loading-overlay"><div class="spinner"></div><div class="loading-text">Connecting...</div></div>
   <div id="error-msg" class="error-msg hidden"></div>
   <header class="topbar">
-    <div class="topbar-left"><div class="topbar-brand"><span id="brand-title">Dashboard</span></div><select id="week-select" class="week-select"><option>Loading...</option></select></div>
+    <div class="topbar-left">
+      <div class="topbar-brand"><span id="brand-title">Dashboard</span></div>
+      <select id="week-select" class="week-select"><option>Loading...</option></select>
+      <div id="date-range-inputs" class="date-range-inputs" style="display:none">
+        <input type="date" id="date-start" class="date-input">
+        <span class="date-sep">→</span>
+        <input type="date" id="date-end" class="date-input">
+        <button id="btn-date-go" class="btn-icon">Go</button>
+      </div>
+      <button id="btn-date-mode" class="btn-icon">📅 Date Range</button>
+    </div>
     <div class="topbar-right"><button id="btn-refresh" class="btn-icon">↻ Refresh</button></div>
   </header>
   <main class="main">
@@ -32,12 +37,8 @@
       <div class="biz-card"><div class="kpi-label">Sessions</div><div class="kpi-value" id="biz-sessions">—</div></div>
       <div class="biz-card"><div class="kpi-label">Buy Box %</div><div class="kpi-value" id="biz-buybox">—</div></div>
     </div>
-
     <div id="mtd-section" class="card card-full mb-1" style="display:none"><div class="card-title">MTD Budget Pacing</div><div class="mtd-row"><div class="mtd-bar-group"><div class="mtd-bar-label">Spend · Day <span id="mtd-day">—</span>/<span id="mtd-days">—</span></div><div class="mtd-bar-values"><span id="mtd-spend-val">—</span> / <span id="mtd-spend-target">—</span></div><div class="mtd-bar-track"><div class="mtd-bar-fill mtd-bar-blue" id="mtd-spend-bar" style="width:0%"></div></div><div class="mtd-bar-note" id="mtd-spend-note"></div></div><div class="mtd-bar-group"><div class="mtd-bar-label">Revenue vs Target</div><div class="mtd-bar-values"><span id="mtd-rev-val">—</span> / <span id="mtd-rev-target">—</span></div><div class="mtd-bar-track"><div class="mtd-bar-fill mtd-bar-cyan" id="mtd-rev-bar" style="width:0%"></div></div><div class="mtd-bar-note" id="mtd-rev-note"></div></div></div><div class="mtd-stats"><div><span class="mtd-stat-label">MTD ROAS</span><span class="mtd-stat-value" id="mtd-roas">—</span></div><div><span class="mtd-stat-label">Target ROAS</span><span class="mtd-stat-value" id="mtd-roas-target">—</span></div></div></div>
-
-    <!-- Funnel (SVG) -->
     <div id="funnel-section" class="card card-full mb-1" style="display:none"><div class="card-title">Conversion Funnel</div><div id="funnel-svg" class="funnel-svg"></div></div>
-
     <div class="card card-full mb-1"><div class="card-title">Weekly Trend</div><div class="chart-container"><canvas id="trend-chart"></canvas></div></div>
     <div class="chart-row">
       <div class="card"><div class="card-title">Revenue Split</div><div class="chart-container-sm"><canvas id="rev-split-chart"></canvas></div></div>
@@ -47,56 +48,19 @@
       <div class="bg-box"><div class="bg-box-label brand">Brand</div><div class="bg-stats"><div><div class="bg-stat-label">ROAS</div><div class="bg-stat-value text-cyan" id="brand-roas">—</div></div><div><div class="bg-stat-label">Spend</div><div class="bg-stat-value" id="brand-spend">—</div></div><div><div class="bg-stat-label">Sales</div><div class="bg-stat-value" id="brand-sales2">—</div></div><div><div class="bg-stat-label">ACOS</div><div class="bg-stat-value" id="brand-acos">—</div></div></div></div>
       <div class="bg-box"><div class="bg-box-label generic">Generic</div><div class="bg-stats"><div><div class="bg-stat-label">ROAS</div><div class="bg-stat-value text-cyan" id="generic-roas">—</div></div><div><div class="bg-stat-label">Spend</div><div class="bg-stat-value" id="generic-spend">—</div></div><div><div class="bg-stat-label">Sales</div><div class="bg-stat-value" id="generic-sales2">—</div></div><div><div class="bg-stat-label">ACOS</div><div class="bg-stat-value" id="generic-acos">—</div></div></div></div>
     </div>
-
-    <!-- Summary -->
     <div class="card card-full mb-1"><div class="card-header"><div class="card-title">Executive Summary</div><div class="card-actions"><button class="btn-sm" id="summary-btn-edit" onclick="Dashboard.toggleEdit('summary',true)">✎ Edit</button><button class="btn-sm btn-save" id="summary-btn-save" style="display:none" onclick="Dashboard.saveAllNotes()">Save</button><button class="btn-sm" id="summary-btn-cancel" style="display:none" onclick="Dashboard.toggleEdit('summary',false)">Cancel</button></div></div><div class="exec-summary" id="summary-display"><p class="text-muted">Loading...</p></div><textarea class="edit-textarea" id="summary-edit" style="display:none" rows="6"></textarea></div>
-
-    <!-- Recommendations -->
-    <div class="card card-full mb-1"><div class="card-header"><div class="card-title">Recommendations</div><div class="card-actions"><button class="btn-sm" id="recs-btn-edit" onclick="Dashboard.toggleEdit('recs',true)">✎ Edit</button><button class="btn-sm btn-save" id="recs-btn-save" style="display:none" onclick="Dashboard.saveAllNotes()">Save</button><button class="btn-sm" id="recs-btn-cancel" style="display:none" onclick="Dashboard.toggleEdit('recs',false)">Cancel</button></div></div><div class="rec-list" id="recs-display"><p class="text-muted">Loading...</p></div><textarea class="edit-textarea" id="recs-edit" style="display:none" rows="6" placeholder="One per line. HIGH/MED/LOW prefix for badges."></textarea></div>
-
-    <!-- Search Terms (Tabs) -->
-    <div class="card card-full mb-1 tab-group">
-      <div class="card-title">Search Term Analysis</div>
-      <div class="tab-bar">
-        <button class="tab-btn active" data-tab="st-top">Top Performers <span class="tab-count" id="st-top-count">0</span></button>
-        <button class="tab-btn" data-tab="st-low">Low Performers <span class="tab-count" id="st-low-count">0</span></button>
-        <button class="tab-btn" data-tab="st-opp">Scaling Opps <span class="tab-count" id="st-opp-count">0</span></button>
-      </div>
-      <div class="tab-panel active" id="st-top">
-        <table class="data-table"><thead><tr><th>Term</th><th>Sales</th><th>Spend</th><th>ROAS</th><th>Ord</th><th>Clicks</th></tr></thead><tbody id="st-top-body"></tbody></table>
-      </div>
-      <div class="tab-panel" id="st-low">
-        <table class="data-table"><thead><tr><th>Term</th><th>Wasted Spend</th><th>Clicks</th></tr></thead><tbody id="st-low-body"></tbody></table>
-      </div>
-      <div class="tab-panel" id="st-opp">
-        <p class="table-note">High-ROAS generic terms — scale up</p>
-        <table class="data-table"><thead><tr><th>Term</th><th>Sales</th><th>Spend</th><th>ROAS</th></tr></thead><tbody id="st-opp-body"></tbody></table>
-      </div>
+    <div class="card card-full mb-1"><div class="card-header"><div class="card-title">Recommendations</div><div class="card-actions"><button class="btn-sm" id="recs-btn-edit" onclick="Dashboard.toggleEdit('recs',true)">✎ Edit</button><button class="btn-sm btn-save" id="recs-btn-save" style="display:none" onclick="Dashboard.saveAllNotes()">Save</button><button class="btn-sm" id="recs-btn-cancel" style="display:none" onclick="Dashboard.toggleEdit('recs',false)">Cancel</button></div></div><div class="rec-list" id="recs-display"><p class="text-muted">Loading...</p></div><textarea class="edit-textarea" id="recs-edit" style="display:none" rows="6" placeholder="HIGH — Negate terms with $0 sales&#10;MED — Scale top ROAS terms"></textarea></div>
+    <div class="card card-full mb-1 tab-group"><div class="card-title">Search Term Analysis</div><div class="tab-bar"><button class="tab-btn active" data-tab="st-top">Top Performers <span class="tab-count" id="st-top-count">0</span></button><button class="tab-btn" data-tab="st-low">Low Performers <span class="tab-count" id="st-low-count">0</span></button><button class="tab-btn" data-tab="st-opp">Scaling Opps <span class="tab-count" id="st-opp-count">0</span></button></div>
+      <div class="tab-panel active" id="st-top"><table class="data-table"><thead><tr><th>Term</th><th>Sales</th><th>Spend</th><th>ROAS</th><th>Ord</th><th>Clicks</th></tr></thead><tbody id="st-top-body"></tbody></table></div>
+      <div class="tab-panel" id="st-low"><table class="data-table"><thead><tr><th>Term</th><th>Wasted Spend</th><th>Clicks</th></tr></thead><tbody id="st-low-body"></tbody></table></div>
+      <div class="tab-panel" id="st-opp"><p class="table-note">High-ROAS generic terms — scale up</p><table class="data-table"><thead><tr><th>Term</th><th>Sales</th><th>Spend</th><th>ROAS</th></tr></thead><tbody id="st-opp-body"></tbody></table></div>
     </div>
-
-    <!-- Products (Tabs) -->
-    <div class="card card-full mb-1 tab-group">
-      <div class="card-title">Product Performance</div>
-      <div class="tab-bar">
-        <button class="tab-btn active" data-tab="prod-top">Top Products</button>
-        <button class="tab-btn" data-tab="prod-acc">Accelerators <span class="tab-count" id="prod-acc-count">0</span></button>
-        <button class="tab-btn" data-tab="prod-dec">Decelerators <span class="tab-count" id="prod-dec-count">0</span></button>
-      </div>
-      <div class="tab-panel active" id="prod-top">
-        <table class="data-table"><thead><tr><th>Product</th><th>Sales</th><th>Spend</th><th>ROAS</th><th>Ord</th></tr></thead><tbody id="prod-top-body"></tbody></table>
-      </div>
-      <div class="tab-panel" id="prod-acc">
-        <p class="table-note">Products with 20%+ sales growth vs last week</p>
-        <table class="data-table"><thead><tr><th>Product</th><th>Sales</th><th>Prev</th><th>WoW</th><th>ROAS</th><th>Ord</th></tr></thead><tbody id="prod-acc-body"></tbody></table>
-      </div>
-      <div class="tab-panel" id="prod-dec">
-        <p class="table-note">Products with 20%+ sales decline vs last week</p>
-        <table class="data-table"><thead><tr><th>Product</th><th>Sales</th><th>Prev</th><th>WoW</th><th>ROAS</th><th>Ord</th></tr></thead><tbody id="prod-dec-body"></tbody></table>
-      </div>
+    <div class="card card-full mb-1 tab-group"><div class="card-title">Product Performance</div><div class="tab-bar"><button class="tab-btn active" data-tab="prod-top">Top Products</button><button class="tab-btn" data-tab="prod-acc">Accelerators <span class="tab-count" id="prod-acc-count">0</span></button><button class="tab-btn" data-tab="prod-dec">Decelerators <span class="tab-count" id="prod-dec-count">0</span></button></div>
+      <div class="tab-panel active" id="prod-top"><table class="data-table"><thead><tr><th>Product</th><th>Sales</th><th>Spend</th><th>ROAS</th><th>Ord</th></tr></thead><tbody id="prod-top-body"></tbody></table></div>
+      <div class="tab-panel" id="prod-acc"><p class="table-note">20%+ sales growth vs last week</p><table class="data-table"><thead><tr><th>Product</th><th>Sales</th><th>Prev</th><th>WoW</th><th>ROAS</th><th>Ord</th></tr></thead><tbody id="prod-acc-body"></tbody></table></div>
+      <div class="tab-panel" id="prod-dec"><p class="table-note">20%+ sales decline vs last week</p><table class="data-table"><thead><tr><th>Product</th><th>Sales</th><th>Prev</th><th>WoW</th><th>ROAS</th><th>Ord</th></tr></thead><tbody id="prod-dec-body"></tbody></table></div>
     </div>
-
   </main>
   <footer class="footer">Powered by <a href="https://pattern.com" target="_blank">Pattern</a> · #1 Global Ecommerce Accelerator</footer>
   <script src="js/config.js"></script><script src="js/api.js"></script><script src="js/dashboard.js"></script>
-</body>
-</html>
+</body></html>
